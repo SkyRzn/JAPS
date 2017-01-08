@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="main">
+    <file>icons/add.png</file>
+    <file>icons/delete.png</file>
+    <file>icons/application_edit.png</file>
+  </qresource>
+</RCC>

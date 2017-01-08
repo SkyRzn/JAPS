@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style type="text/css">
+			html {height:100%}
+			body {height:100%;margin:0;padding:0}
+			#map_div {height:100%}
+		</style>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=true"></script>
+		<script type="text/javascript">
+			var map = null;
+			var home = null;
+			var planes = {};
+			var polars = {};
+			var rscDir = null;
+			var trackColor = null;
+			var planeIcon = {
+					path: "M 31.905133,19.520033 17.924874,9.196407 c 0.103467,-1.594857 0.170761,-5.156102 0.110170,-5.817176 -0.507919,-5.541654 -4.025643,-3.154674 -4.058277,-0.681443 -0.008933,0.676447 -0.130838,4.175266 -0.142400,6.511255 L 0.036643,19.772734 0.000000,23.079827 l 14.243781,-6.465884 0.514748,10.283910 -4.130361,2.937965 -0.026276,2.164192 5.448929,-1.485195 0.001031,0.017867 5.505819,1.398500 -0.065649,-2.162297 -4.183362,-2.868912 0.336605,-10.291649 14.354555,6.212758 -0.094735,-3.301050 z",
+					fillColor: 'yellow',
+					fillOpacity: 1,
+					scale: 1,
+					anchor: new google.maps.Point(16, 16)
+				};
+			var trackLine = {
+								geodesic: true,
+								strokeWeight: 2,
+								zIndex: 3
+							};
+
+			function initialize() {
+				var mapOptions = {
+					zoom: 5,
+					disableDefaultUI: true,
+					mapTypeId: google.maps.MapTypeId.ROADMAP,
+					styles: [{stylers: [{saturation: -70}, {lightness: -70}]}]
+				};
+				map = new google.maps.Map(document.getElementById("map_div"), mapOptions);
+			}
+
+			function setRscDir(dir) {
+				rscDir = dir;
+			}
+
+			function setHome(point, draw) {
+				map.setOptions({center: point});
+				if (draw) {
+					var homeIcon = {	strokeWeight: 1,
+										path: google.maps.SymbolPath.CIRCLE,
+										scale: 4,
+										fillColor: 'rgb(0,255,0)',
+										fillOpacity: 0.9};
+					home = new google.maps.Marker({	position: point,
+													map: map,
+													icon: homeIcon,
+													zIndex: 2});
+				}
+			}
+
+			function altColor(alt1, alt2) {
+
+				if (alt1 == -10000 && alt2 == -10000)
+					return '#CCC';
+				if (alt1 == -10000)
+					alt1 = alt2
+				if (alt2 == -10000)
+					alt2 = alt1
+				alt = (alt1 + alt2)/2.0
+
+				if (alt < 0)
+					alt = 0;
+				if (alt > 9999)
+					alt = 9999;
+
+
+				var r = 0;
+				var g = 0;
+				var b = 0;
+				var k = 255.0/1999;
+
+				if (alt < 2000) {
+					r = 255;
+					g = alt*k;
+				} else if (alt >= 2000 && alt < 4000) {
+					r = (3999-alt)*k;
+					g = 255;
+				} else if (alt >= 4000 && alt < 6000) {
+					g = 255;
+					b = (alt-4000)*k;
+				} else if (alt >= 6000 && alt < 8000) {
+					g = (7999-alt)*k;
+					b = 255;
+				} else if (alt >= 8000) {
+					r = (alt-8000)*k;
+					b = 255;
+				}
+
+				return 'rgb('+Math.round(r)+','+Math.round(g)+','+Math.round(b)+')';
+			}
+
+			function addTrack(track, points) {
+				trackLine.map = map;
+
+				if (trackColor == null) { // rainbow
+					console.log(points.length);
+					for (var i = 0; i < points.length - 1; i++) {
+						trackLine.path = [points[i], points[i+1]];
+						trackLine.strokeColor = altColor(points[i].alt, points[i+1].alt);
+						track.push(new google.maps.Polyline(trackLine));
+					}
+				} else {
+					track = track.concat(points);
+					trackLine.path = points;
+					trackLine.strokeColor = trackColor;
+					track.push(new google.maps.Polyline(trackLine));
+				}
+
+				return track;
+			}
+
+			function addPlane(id, points, info) {
+				planeIcon['rotation'] = info.azimuth;
+				lastPoint = points[points.length - 1];
+				title = id + ': ' + lastPoint.alt;
+				plane = new google.maps.Marker({
+											position: lastPoint,
+											map: map,
+											icon: planeIcon,
+											title: title,
+											zIndex: 4});
+				track = addTrack([], points);
+				planes[id] = {plane: plane, track: track};
+				return 'huipizdadjigurda';
+			}
+
+			function updatePlane(id, points, info) {
+				planeIcon['rotation'] = info.azimuth;
+				lastPoint = points[points.length - 1];
+				title = id + ': ' + lastPoint.alt;
+
+				plane = planes[id].plane;
+				plane.setPosition(lastPoint);
+				plane.setOptions({icon: planeIcon, title: title});
+
+				track = planes[id].track;
+				addTrack(track, points);
+				planes[id] = {plane: plane, track: track};
+			}
+
+			function removePlane(id) {
+				planes[id].plane.setMap(null);
+				delete planes[id];
+			}
+
+			function addPolar(id, color, data) {
+				polars[id] = new google.maps.Polygon({	paths: data,
+														strokeColor: color,
+														fillColor: color,
+														strokeOpacity: 0.7,
+														strokeWeight: 1,
+														fillOpacity: 0.1,
+														map: map,
+														zIndex: 1});
+			}
+
+			function updatePolar(id, color, data) {
+				polars[id].setPaths(data);
+				polars[id].setOptions({strokeColor: color, fillColor: color});
+			}
+
+			function removePolar(id) {
+				polars[id].setMap(null);
+				delete polars[id];
+			}
+
+			function setMapOptions(lightness, saturation) {
+				options = {styles: [{stylers: [{lightness: lightness}, {saturation: saturation}]}]};
+				map.setOptions(options);
+
+			}
+
+			function setPlaneOptions(iconSize, iconCol, trackWidth, trackCol, allTracks, selectedTrack) {
+				planeIcon.scale = iconSize/32.0;
+				planeIcon.fillColor = iconCol;
+				trackColor = trackCol;
+				for (var id in planes) {
+					plane = planes[id].plane;
+					track = planes[id].track;
+					plane.setOptions({icon: planeIcon});
+					setTrack(track, []);
+				}
+			}
+
+		</script>
+	</head>
+	<body onload="initialize()">
+		<div id="map_div"></div>
+	</body>
+</html>
