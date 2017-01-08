@@ -44,15 +44,12 @@ class Browser(QMainWindow):
 			self._settings.restoreDockState(dock)
 
 	def mapLoaded(self):
-		home = Point(54.613579, 39.815831, grad=True)
-		self._dispatcher.setHome(home)
-		self._map.setHome(home)
+
+		self._settings.loadSettings()
 
 		self._net = Net('192.168.0.111', 30003, sbs.strToPoints)
 		self._dispatcher.addSourceQueue(0, self._net)
 		self._net.start()
-
-		self._settings.loadSettings()
 
 	def createDock(self, name, widget):
 		dock = QDockWidget(name, self)
@@ -71,6 +68,7 @@ class Browser(QMainWindow):
 
 		self._settings.mapStyleChanged.connect(self._map.setMapStyle)
 		self._settings.planeStyleChanged.connect(self.planeStyleChanged)
+		self._settings.homeChanged.connect(self.setHome)
 
 	def planeStyleChanged(self, style):
 		self._map.setPlaneStyle(style)
@@ -90,6 +88,14 @@ class Browser(QMainWindow):
 				if code == self._planes.item(i).text():
 					self._planes.takeItem(i)
 					break
+
+	def setHome(self, alt, lng):
+		#54.613579, 39.815831
+		home = None
+		if alt != 0 and lng != 0:
+			home = Point(alt, lng, grad=True)
+		self._dispatcher.setHome(home)
+		self._map.setHome(home)
 
 	def closeEvent(self, event):
 		self._settings.saveWindowState(self)

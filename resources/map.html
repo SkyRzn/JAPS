@@ -48,20 +48,25 @@ function include(path) {
 }
 
 function setHome(point, draw) {
-	map.setOptions({center: point});
-	if (draw) {
-		var icon = {
-			strokeWeight: 1,
-			path: google.maps.SymbolPath.CIRCLE,
-			scale: 4,
-			fillColor: 'rgb(0,255,0)',
-			fillOpacity: 0.9
-		};
-		home = new google.maps.Marker({	position: point,
-										map: map,
-										icon: icon,
-										zIndex: 2});
+	if (home)
+		home.setMap(null);
+
+	if (point == null) {
+		home = null;
+		return;
 	}
+	map.setOptions({center: point});
+	var icon = {
+		strokeWeight: 1,
+		path: google.maps.SymbolPath.CIRCLE,
+		scale: 4,
+		fillColor: 'rgb(0,255,0)',
+		fillOpacity: 0.9
+	};
+	home = new google.maps.Marker({	position: point,
+									map: map,
+									icon: icon,
+									zIndex: 2});
 }
 
 function initMap() {

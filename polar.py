@@ -13,7 +13,7 @@ class Polar:
 
 	def setHome(self, home):
 		self._home = home
-		points = self._data
+		points = [p[0] for p in self._data.values()]
 		self._data = {}
 		self.addPoints(points)
 
@@ -29,6 +29,7 @@ class Polar:
 
 	def addPoints(self, points):
 		updated = False
+
 		if not self._home:
 			return
 
@@ -46,7 +47,11 @@ class Polar:
 		return self._maxDist
 
 	def boundPoints(self):
+		if not self._home:
+			return []
+
 		res = []
+
 		for az in range(360):
 			res.append(self._data.get(az, (self._home, 0)))
 		return res

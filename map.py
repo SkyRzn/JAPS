@@ -40,7 +40,10 @@ class Map(QWebView):
 		self._frame.evaluateJavaScript(script).toString();
 
 	def setHome(self, point):
-		self.script('setHome(%s, true);' % (point.js()));
+		if point == None:
+			self.script('setHome(null);');
+		else:
+			self.script('setHome(%s);' % (point.js()));
 
 	def addPlanes(self, planes):
 		for id, plane in planes.items():

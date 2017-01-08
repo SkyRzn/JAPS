@@ -35,8 +35,8 @@ class Dispatcher(QObject):
 		if self._home == point:
 			return
 		self._home = point
-		for polar in self._polars:
-			polar.setHome(home)
+		for polar in self._polars.values():
+			polar.setHome(point)
 		self.emit(SIGNAL('updatePolars'))
 
 	def renew(self):

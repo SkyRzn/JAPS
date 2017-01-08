@@ -8,6 +8,7 @@ from PyQt4.QtGui import *
 
 class Settings(QWidget):
 	mapStyleChanged = pyqtSignal(int, int)
+	homeChanged = pyqtSignal(float, float)
 	planeStyleChanged = pyqtSignal(tuple)
 
 	def __init__(self, parent = None):
@@ -49,14 +50,14 @@ class Settings(QWidget):
 
 	def loadSettings(self):
 		# Map
-		l = self._settings.value('map/lightness', 0).toInt()[0]
-		s = self._settings.value('map/saturation', 0).toInt()[0]
+		lightness = self._settings.value('map/lightness', 0).toInt()[0]
+		saturation = self._settings.value('map/saturation', 0).toInt()[0]
 		alt = self._settings.value('home/altitude', 0).toFloat()[0]
 		lng = self._settings.value('home/longitude', 0).toFloat()[0]
-		self.ui.lightnessSlider.setValue(l)
-		self.ui.saturationSlider.setValue(s)
-		self.ui.altitudeEdit.setValue(alt)
-		self.ui.longitudeEdit.setValue(lng)
+		self.ui.lightnessSlider.setValue(lightness)
+		self.ui.saturationSlider.setValue(saturation)
+		self.ui.homeAltitude.setValue(alt)
+		self.ui.homeLongitude.setValue(lng)
 
 		# Plane icons and tracks
 		size = self._settings.value('plane/icon/size', 32).toInt()[0]
@@ -81,12 +82,17 @@ class Settings(QWidget):
 	def updateMap(self, save):
 		lightness = self.ui.lightnessSlider.value()
 		saturation = self.ui.saturationSlider.value()
+		altitude = self.ui.homeAltitude.value()
+		longitude = self.ui.homeLongitude.value()
 
 		if save:
 			self._settings.setValue('map/lightness', lightness)
 			self._settings.setValue('map/saturation', saturation)
+			self._settings.setValue('home/altitude', altitude)
+			self._settings.setValue('home/longitude', longitude)
 
 		self.mapStyleChanged.emit(lightness, saturation)
+		self.homeChanged.emit(altitude, longitude)
 
 	def planeApply(self):
 		self.updatePlane(True)
