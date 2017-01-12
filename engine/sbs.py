@@ -36,6 +36,7 @@ def lineToPoint(line):
 
 def strToPoints(data):
 	lines = data.split('\n')
+	tail = lines.pop(-1)
 	res = []
 
 	for line in lines:
@@ -44,8 +45,7 @@ def strToPoints(data):
 		if p:
 			res.append(p)
 
-	return res
-
+	return res, tail
 
 def loadFromFile(fn):
 	f = open(fn, 'r')

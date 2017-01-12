@@ -9,7 +9,7 @@ class Plane:
 	def __init__(self, points):
 		self._points = []
 		self._pointsCount = 0
-		self._azimuth = 0
+		self._gazimuth = 0
 		self._code = points[0].info('code')
 		self.addPoints(points)
 
@@ -18,7 +18,7 @@ class Plane:
 		self._points += points
 		self._pointsCount += len(points)
 		if self._pointsCount > 1:
-			self._azimuth = self._points[-2].gazimuth(self._points[-1])
+			self._gazimuth = self._points[-2].gazimuth(self._points[-1])
 
 	def lastSeen(self):
 		return self._lastSeen
@@ -38,5 +38,5 @@ class Plane:
 		return self._points[-1].js()
 
 	def jsInfo(self):
-		res = {'azimuth': self._azimuth}
+		res = {'azimuth': self._gazimuth}
 		return res

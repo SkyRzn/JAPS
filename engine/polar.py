@@ -5,11 +5,13 @@ import json
 
 
 class Polar:
-	def __init__(self, home, points):
+	def __init__(self, id, home, sources, callback = None):
+		self._id = id
 		self._data = {}
 		self._home = home
 		self._maxDist = 0
-		self.addPoints(points)
+		self._sources = set(sources)
+		self._callback = callback
 
 	def setHome(self, home):
 		self._home = home
@@ -27,7 +29,7 @@ class Polar:
 		json.save(f, self._data)
 		f.close()
 
-	def addPoints(self, points):
+	def update(self, points):
 		updated = False
 
 		if not self._home:
@@ -41,7 +43,16 @@ class Polar:
 				self._data[az] = (point, dt)
 				self._maxDist = max(self._maxDist, dt)
 				updated = True
+
+		if self._callback and updated:
+			self._callback(self)
 		return updated
+
+	def addSource(self, source):
+		self._sources.add(source)
+
+	def sources(self):
+		return self._sources
 
 	def maxDistance(self):
 		return self._maxDist
@@ -57,7 +68,7 @@ class Polar:
 		return res
 
 	def js(self):
-		res = []
+		res = [self._home.js()]
 
 		points = self.boundPoints()
 
@@ -66,3 +77,5 @@ class Polar:
 
 		return '[%s]' % (','.join(res));
 
+	def id(self):
+		return self._id

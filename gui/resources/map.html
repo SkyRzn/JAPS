@@ -10,7 +10,6 @@
 
 // 		------------------------- MAP --------------------------------------
 var map = null;
-var home = null;
 var polars = {};
 var planes = {};
 var trackColor = null;
@@ -47,28 +46,6 @@ function include(path) {
 	document.head.appendChild(imported);
 }
 
-function setHome(point, draw) {
-	if (home)
-		home.setMap(null);
-
-	if (point == null) {
-		home = null;
-		return;
-	}
-	map.setOptions({center: point});
-	var icon = {
-		strokeWeight: 1,
-		path: google.maps.SymbolPath.CIRCLE,
-		scale: 4,
-		fillColor: 'rgb(0,255,0)',
-		fillOpacity: 0.9
-	};
-	home = new google.maps.Marker({	position: point,
-									map: map,
-									icon: icon,
-									zIndex: 2});
-}
-
 function initMap() {
 	map = new google.maps.Map(document.getElementById('map'), mapOptions);
 	planeIcon.anchor = new google.maps.Point(16, 16);
@@ -98,6 +75,16 @@ function addPlanePoints(id, points, info) {
 	planes[id].marker.setOptions({icon: planeIcon, title: title = id + ': ' + lastPoint.alt});
 
 	planes[id].track = planes[id].track.concat(drawTrack(points));
+	var cnt = 0;
+	var plcnt = 0;
+	for (var i in planes) {
+		plcnt = plcnt + 1;
+		var track = planes[i].track;
+		for (var j=0;j<track.length;j++) {
+			cnt = cnt + 1;
+		}
+	}
+
 }
 
 function removePlane(id) {
@@ -105,7 +92,10 @@ function removePlane(id) {
 	var track = planes[id].track;
 	for (var i = 0; i < track.length; i++) {
 		track[i].setMap(null);
+		delete track[i];
 	}
+	delete planes[id].track;
+	delete planes[id].marker;
 	delete planes[id];
 }
 
@@ -208,7 +198,20 @@ function setTrackStyle(width, color) {
 // 		------------------------- POLAR --------------------------------------
 
 function addPolar(id, color, data) {
-	polars[id] = new google.maps.Polygon({	paths: data,
+	console.log('************ ');
+	var icon = {
+		strokeWeight: 1,
+		path: google.maps.SymbolPath.CIRCLE,
+		scale: 4,
+		fillColor: color,
+		fillOpacity: 0.9
+	};
+	home = new google.maps.Marker({	position: data.pop(0),
+									map: map,
+									icon: icon,
+									zIndex: 2});
+
+	polar = new google.maps.Polygon({	paths: data,
 		strokeColor: color,
 		fillColor: color,
 		strokeOpacity: 0.7,
@@ -217,15 +220,20 @@ function addPolar(id, color, data) {
 		map: map,
 		zIndex: 1
 	});
+	console.log('************ '+id);
+	polars[id] = [home, polar];
+	console.log('************ '+polars[id]);
 }
 
 function updatePolar(id, color, data) {
-	polars[id].setPaths(data);
-	polars[id].setOptions({strokeColor: color, fillColor: color});
+	data.pop(0)
+	polars[id][1].setPaths(data);
+	polars[id][1].setOptions({strokeColor: color, fillColor: color});
 }
 
 function removePolar(id) {
-	polars[id].setMap(null);
+	polars[id][0].setMap(null);
+	polars[id][1].setMap(null);
 	delete polars[id];
 }
 

@@ -7,13 +7,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import QWebView, QWebPage
 
-from point import Point
-from polar import Polar
-from plane import Plane
-from net import Net
-import sbs
-
-
 
 class WebPage(QWebPage):
 	def javaScriptConsoleMessage(self, msg, line, source):
@@ -39,12 +32,6 @@ class Map(QWebView):
 	def script(self, script):
 		self._frame.evaluateJavaScript(script).toString();
 
-	def setHome(self, point):
-		if point == None:
-			self.script('setHome(null);');
-		else:
-			self.script('setHome(%s);' % (point.js()));
-
 	def addPlanes(self, planes):
 		for id, plane in planes.items():
 			self.script('addPlane("%s", %s, %s);' % (id, plane.jsTrack(), plane.jsInfo()));
@@ -54,20 +41,21 @@ class Map(QWebView):
 			plane, fromPoint = item
 			self.script('addPlanePoints("%s", %s, %s);' % (id, plane.jsTrack(fromPoint-1), plane.jsInfo()));
 
-	def removePlanes(self, ids = None):
-		if ids == None:
+	def removePlanes(self, planes = None):
+		if planes == None:
 			self.script('cleanPlanes();');
 			return
-		for id in ids:
+		for id in planes:
+			print 'remove', id
 			self.script('removePlane("%s");' % id);
 
-	def addPolars(self, polars):
-		for id, polar in polars.items():
-			self.script('addPolar(%d, "#00ff00", %s);' % (id, polar.js()));
+	def addPolar(self, polar):
+		pass
+		#self.script('addPolar("%s", "#00ff00", %s);' % (polar.id(), polar.js()));
 
-	def updatePolars(self, polars):
-		for id, polar in polars.items():
-			self.script('updatePolar(%d, "#00ff00", %s);' % (id, polar.js()));
+	def updatePolar(self, polar):
+		pass
+		#self.script('updatePolar("%s", "#00ff00", %s);' % (polar.id(), polar.js()));
 
 	def removePolars(self, ids):
 		for id in ids:
