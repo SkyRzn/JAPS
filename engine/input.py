@@ -10,15 +10,17 @@ class InputError(Exception):
     pass
 
 class Input:
-	def __init__(self):
+	def __init__(self, config = None):
 		self._sources = {}
+		if config:
+			self.setConfig(config)
 
 	def addGroup(self, name):
 		if name in self._sources:
 			raise  InputError('Name "%s" is already used' % name)
-		self._sources[name] = {'type': 'group', 'items': {}}
+		self._sources[name] = {'type': 'group', 'sources': {}}
 
-	def addSource(self, group, name, data):
+	def addSource(self, group, name, config):
 		root = self._sources
 		if group != None:
 			if group not in self._sources:
@@ -26,27 +28,17 @@ class Input:
 			root = self._sources[group]
 			if root['type'] != 'group':
 				raise InputError('"%s" is not group item' % group)
-			root = root['items']
+			root = root['sources']
 
 		if name in root:
 			raise InputError('Name "%s" is already used' % name)
 
-		type_ = data['type']
-		fmt = data['format']
-
-		if fmt == 'sbs':
-			handler = sbs.strToPoints
-		else:
-			raise InputError('Unknown format "%s"' % fmt)
+		type_ = config['type']
 
 		if type_ == 'net':
-			addr = data['address']
-			port = int(data['port'])
-			source = Net(addr, port, handler)
-			type_ = 'qsource'
+			source = Net(config)
 		elif type_ == 'file':
-			source = File(data['path'], handler)
-			type_ = 'fsource'
+			source = File(config)
 		else:
 			raise InputError('Unknown source type "%s"' % type_)
 
@@ -54,43 +46,50 @@ class Input:
 
 		return source
 
-	def _getSourceData(self, item):
-		return item['source'].dequeue()
+	def _getSourceData(self, source):
+		return source['source'].dequeue()
 
 	def getPoints(self):
 		res = {}
-		for id, item in self._sources.items():
+		for id, source in self._sources.items():
 			points = []
-			if item['type'] == 'group':
-				for iid, iitem in item['items'].items():
-					points += self._getSourceData(iitem)
+			if source['type'] == 'group':
+				for source_ in source['sources'].values():
+					points += self._getSourceData(source_)
 			else:
-				points += self._getSourceData(item)
-			res[id] = points
+				points += self._getSourceData(source)
+			if points:
+				res[id] = points
 		return res
 
-	def startAll(self):
-		items = self.sources()
-		for item in items.values():
-			item['source'].start()
+	def start(self):
+		sources = self.sources()
+		for source in sources.values():
+			source['source'].start()
 
-	def stopAll(self):
-		items = self.sources()
-		for item in items.values():
-			item['source'].stop()
+	def stop(self):
+		sources = self.sources()
+		for id, source in sources.items():
+			print '&&&&&&&&&&&&&&&&&&', id
+			source['source'].stop()
 
-	def sources(self):
+	def sources(self): #FIXME не надо смешивать источники из разных групп.
 		res = {}
-		for id, item in self._sources.items():
-			if item['type'] == 'group':
-				res.update(item['items'])
+		for id, source in self._sources.items():
+			if source['type'] == 'group':
+				res.update(source['sources'])
 			else:
-				res[id] = item
+				res[id] = source
 		return res
 
-	def clean(self):
-		self.stopAll()
-		self._sources = {}
+	def setConfig(self, config):
+		for id, source in config.items():
+			if source['type'] == 'group':
+				self.addGroup(id)
+				for id_, source_ in source['sources'].items():
+					self.addSource(id, id_, source_)
+			else:
+				self.addSource(None, id, source)
 
 
 

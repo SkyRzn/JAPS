@@ -50,7 +50,7 @@ class Tracker:
 				removed[id] = plane
 				del self._planes[id]
 
-		if self._callback:
+		if self._callback and (added or updated or removed):
 			self._callback(added, updated, removed)
 
 	def addSource(self, source):

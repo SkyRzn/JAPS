@@ -6,16 +6,25 @@ from select import select
 from abstract_source import AbstractSource
 from time import sleep
 
-import os #TEST
+
 BUF_LEN = 4096*20
+DEFAULT_TIMEOUT = 5
 
 
 class Net(AbstractSource):
-	def __init__(self, addr, port, handler):
-		AbstractSource.__init__(self, (addr, port, handler))
+	def __init__(self, config):
 
-	def run(self, addr, port, handler):
-		print 'net pid =', os.getpid()
+		AbstractSource.__init__(self, config)
+
+	def run(self, config):
+		try:
+			addr = config['address']
+			port = int(config['port'])
+			handler = config['handler']
+		except:
+			raise Exception('Net config error')
+		timeout = int(config.get('timeout', DEFAULT_TIMEOUT))
+
 		wait = 0
 		while not self._stop.is_set():
 			wait += 1
@@ -27,7 +36,7 @@ class Net(AbstractSource):
 					sleep(0.1)
 					continue
 			else:
-				if wait >= 50:
+				if wait >= timeout*10:
 					wait = 0
 				continue
 

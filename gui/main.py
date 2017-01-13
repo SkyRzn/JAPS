@@ -44,7 +44,7 @@ class Browser(QMainWindow):
 	def mapLoaded(self):
 		self._settings.loadSettings()
 
-		self._dispatcher.addTracker('lol', ['hui'], 2, self.trackerCallback)
+		self._dispatcher.addTracker('lol', ['hui'], 600, self.trackerCallback)
 
 		home = Point(54.613579, 39.815831, grad=True)
 		polar = self._dispatcher.addPolar('lol', home, ['hui'], self.polarCallback)

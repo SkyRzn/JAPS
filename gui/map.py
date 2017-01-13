@@ -39,7 +39,7 @@ class Map(QWebView):
 	def updatePlanes(self, planes):
 		for id, item in planes.items():
 			plane, fromPoint = item
-			self.script('addPlanePoints("%s", %s, %s);' % (id, plane.jsTrack(fromPoint-1), plane.jsInfo()));
+			self.script('addPlanePoints("%s", %s, %s);' % (id, plane.jsTrack(), plane.jsInfo()));
 
 	def removePlanes(self, planes = None):
 		if planes == None:

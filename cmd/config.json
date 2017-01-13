@@ -1,0 +1,36 @@
+{
+	"input": {
+		"radar_group1": { "type": "group",
+			"sources": {
+				"radar1": {"type": "net", "format": "sbs", "address": "localhost", "port": 30003},
+				"file1": {"type": "file", "format": "sbs", "path": "2017-01-08.txt"}
+			}
+		}
+	},
+
+	"polars": {
+		"radar1": {
+			"sources": ["radar_group1"],
+			"period": "daily"
+		},
+		"radar2": {
+			"sources": ["radar2"],
+			"period": "daily",
+			"log": "/tmp/radar2_%s.polar"
+		}
+	},
+
+	"trackers": {
+		"tracker1": {
+			"sources": ["radar_group1"],
+			"timeout": 3600
+		}
+	},
+
+	"output": {
+		"standard": {
+			"direction": "in",
+			"port": 10000
+		}
+	}
+}

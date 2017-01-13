@@ -19,6 +19,8 @@ class Dispatcher:
 
 	def update(self):
 		data = self._input.getPoints()
+		if not data:
+			return False
 
 		for id, points in data.items():
 			for tracker in self._trackers.values():
@@ -28,6 +30,7 @@ class Dispatcher:
 			for polar in self._polars.values():
 				if id in polar.sources():
 					polar.update(points)
+		return True
 
 	def addTracker(self, id, sources, timeout, callback = None):
 		self._trackers[id] = Tracker(id, sources, timeout, callback)
@@ -45,8 +48,8 @@ class Dispatcher:
 		if id in self._polars:
 			del self._polars[id]
 
-	def reset(self):
-		self._input.clean()
+	def stop(self):
+		self._input.stop()
 
 	def input(self):
 		return self._input
@@ -55,10 +58,10 @@ class Dispatcher:
 		self._trackerCallback
 
 	def start(self):
-		self._input.startAll()
+		self._input.start()
 
-	def stop(self):
-		self._input.stopAll()
+	def setConfig(self, config):
+		self._input.setConfig(config['input'])
 
 
 
