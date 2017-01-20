@@ -12,7 +12,7 @@ class Browser(QWidget):
 		QWidget.__init__(self)
 		self.resize(1024, 768)
 
-		f = open('/tmp/uvd.dump.medv1', 'r')
+		f = open('dumps/uvd.dump.medv1', 'r')
 		self.data = bytearray(f.read())
 		f.close()
 
@@ -41,7 +41,7 @@ class Browser(QWidget):
 				val = i/4.0
 				if val-prev == 0.5:
 					continue
-				print val - prev
+				print val, val - prev
 				prev = val
 
 		for y in range(50):
